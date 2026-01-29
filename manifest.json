@@ -1,0 +1,15 @@
+{
+  "name": "Flow Extractor",
+  "id": "figma-flow-extractor",
+  "api": "1.0.0",
+  "main": "dist/plugin/code.js",
+  "ui": "dist/plugin/ui.html",
+  "capabilities": [],
+  "enableProposedApi": false,
+  "editorType": ["figma"],
+  "documentAccess": "dynamic-page",
+  "networkAccess": {
+    "allowedDomains": ["localhost", "127.0.0.1"],
+    "reasoning": "To communicate with local MCP server"
+  }
+}

@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 12px;
+      color: #333;
+      background: #fff;
+      padding: 16px;
+    }
+    
+    h1 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #1a1a1a;
+    }
+    
+    h2 {
+      font-size: 13px;
+      font-weight: 600;
+      margin: 16px 0 8px 0;
+      color: #333;
+    }
+    
+    .section {
+      margin-bottom: 16px;
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    button.primary {
+      background: #0d99ff;
+      color: white;
+    }
+    
+    button.primary:hover {
+      background: #0077cc;
+    }
+    
+    button.secondary {
+      background: #f0f0f0;
+      color: #333;
+    }
+    
+    button.secondary:hover {
+      background: #e0e0e0;
+    }
+    
+    button.success {
+      background: #1bc47d;
+      color: white;
+    }
+    
+    button.success:hover {
+      background: #15a366;
+    }
+    
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .status {
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      font-size: 11px;
+    }
+    
+    .status.info {
+      background: #e8f4fd;
+      color: #0066cc;
+    }
+    
+    .status.success {
+      background: #e6f7ef;
+      color: #0d7544;
+    }
+    
+    .status.error {
+      background: #fde8e8;
+      color: #c41e3a;
+    }
+    
+    .selection-info {
+      font-size: 11px;
+      color: #666;
+      margin-bottom: 12px;
+    }
+    
+    .output-area {
+      width: 100%;
+      height: 300px;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      padding: 12px;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 10px;
+      resize: vertical;
+      overflow: auto;
+      background: #fafafa;
+    }
+    
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid #e0e0e0;
+      margin-bottom: 12px;
+    }
+    
+    .tab {
+      padding: 8px 16px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 12px;
+      color: #666;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+    }
+    
+    .tab.active {
+      color: #0d99ff;
+      border-bottom-color: #0d99ff;
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    
+    .stat-card {
+      background: #f8f8f8;
+      padding: 12px;
+      border-radius: 6px;
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 24px;
+      font-weight: 600;
+      color: #0d99ff;
+    }
+    
+    .stat-label {
+      font-size: 10px;
+      color: #666;
+      margin-top: 4px;
+    }
+    
+    .server-config {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .server-config input {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 12px;
+    }
+    
+    .connection-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+    }
+    
+    .connection-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ccc;
+    }
+    
+    .connection-dot.connected {
+      background: #1bc47d;
+    }
+    
+    pre {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔄 Flow Extractor</h1>
+  
+  <div class="selection-info" id="selectionInfo">
+    選択なし - ページ全体を抽出します
+  </div>
+  
+  <div class="button-group">
+    <button class="primary" id="extractAll">ページ全体を抽出</button>
+    <button class="secondary" id="extractSelection">選択範囲を抽出</button>
+  </div>
+  
+  <div id="statusArea"></div>
+  
+  <div class="stats" id="stats" style="display: none;">
+    <div class="stat-card">
+      <div class="stat-value" id="screenCount">0</div>
+      <div class="stat-label">画面数</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="interactionCount">0</div>
+      <div class="stat-label">インタラクション</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="connectionCount">0</div>
+      <div class="stat-label">遷移</div>
+    </div>
+  </div>
+  
+  <div class="tabs">
+    <button class="tab active" data-tab="markdown">Markdown</button>
+    <button class="tab" data-tab="json">JSON</button>
+    <button class="tab" data-tab="mermaid">Mermaid</button>
+  </div>
+  
+  <div class="tab-content active" id="markdown-tab">
+    <pre class="output-area" id="markdownOutput">抽出ボタンをクリックしてフロー情報を取得してください</pre>
+  </div>
+  
+  <div class="tab-content" id="json-tab">
+    <pre class="output-area" id="jsonOutput"></pre>
+  </div>
+  
+  <div class="tab-content" id="mermaid-tab">
+    <pre class="output-area" id="mermaidOutput"></pre>
+  </div>
+  
+  <h2>🖥️ MCPサーバー連携</h2>
+  
+  <div class="server-config">
+    <input type="text" id="serverUrl" value="http://localhost:3846" placeholder="サーバーURL">
+    <div class="connection-status">
+      <div class="connection-dot" id="connectionDot"></div>
+      <span id="connectionText">未接続</span>
+    </div>
+  </div>
+  
+  <div class="button-group">
+    <button class="success" id="sendToServer" disabled>サーバーに送信</button>
+    <button class="secondary" id="copyToClipboard" disabled>クリップボードにコピー</button>
+  </div>
+
+  <script>
+    let flowData = null;
+    let markdownData = null;
+    
+    // タブ切り替え
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab + '-tab').classList.add('active');
+      });
+    });
+    
+    // ボタンイベント
+    document.getElementById('extractAll').addEventListener('click', () => {
+      showStatus('抽出中...', 'info');
+      parent.postMessage({ pluginMessage: { type: 'extract-all' } }, '*');
+    });
+    
+    document.getElementById('extractSelection').addEventListener('click', () => {
+      showStatus('選択範囲を抽出中...', 'info');
+      parent.postMessage({ pluginMessage: { type: 'extract-selection' } }, '*');
+    });
+    
+    document.getElementById('sendToServer').addEventListener('click', async () => {
+      if (!flowData) return;
+      
+      const serverUrl = document.getElementById('serverUrl').value;
+      showStatus('サーバーに送信中...', 'info');
+      
+      try {
+        const response = await fetch(serverUrl + '/flow-data', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(flowData)
+        });
+        
+        if (response.ok) {
+          showStatus('サーバーに送信完了!', 'success');
+          document.getElementById('connectionDot').classList.add('connected');
+          document.getElementById('connectionText').textContent = '接続済み';
+        } else {
+          throw new Error('Server returned ' + response.status);
+        }
+      } catch (error) {
+        showStatus('送信エラー: ' + error.message, 'error');
+        document.getElementById('connectionDot').classList.remove('connected');
+        document.getElementById('connectionText').textContent = '未接続';
+      }
+    });
+    
+    document.getElementById('copyToClipboard').addEventListener('click', () => {
+      const activeTab = document.querySelector('.tab.active').dataset.tab;
+      let text = '';
+      
+      if (activeTab === 'markdown') {
+        text = markdownData;
+      } else if (activeTab === 'json') {
+        text = JSON.stringify(flowData, null, 2);
+      } else if (activeTab === 'mermaid') {
+        text = generateMermaid(flowData);
+      }
+      
+      navigator.clipboard.writeText(text).then(() => {
+        showStatus('クリップボードにコピーしました!', 'success');
+      });
+    });
+    
+    // メッセージ受信
+    window.onmessage = (event) => {
+      const msg = event.data.pluginMessage;
+      if (!msg) return;
+      
+      switch (msg.type) {
+        case 'flow-data':
+          flowData = msg.data;
+          markdownData = msg.markdown;
+          updateUI();
+          showStatus('抽出完了!', 'success');
+          break;
+          
+        case 'selection-changed':
+          if (msg.count === 0) {
+            document.getElementById('selectionInfo').textContent = '選択なし - ページ全体を抽出します';
+          } else {
+            document.getElementById('selectionInfo').textContent = 
+              `${msg.count}個選択中: ${msg.names.slice(0, 3).join(', ')}${msg.count > 3 ? '...' : ''}`;
+          }
+          break;
+          
+        case 'error':
+          showStatus('エラー: ' + msg.message, 'error');
+          break;
+      }
+    };
+    
+    function showStatus(message, type) {
+      const statusArea = document.getElementById('statusArea');
+      statusArea.innerHTML = `<div class="status ${type}">${message}</div>`;
+    }
+    
+    function updateUI() {
+      if (!flowData) return;
+      
+      // 統計を更新
+      document.getElementById('stats').style.display = 'grid';
+      document.getElementById('screenCount').textContent = flowData.screens.length;
+      
+      let interactionCount = 0;
+      flowData.screens.forEach(s => interactionCount += s.interactions.length);
+      document.getElementById('interactionCount').textContent = interactionCount;
+      document.getElementById('connectionCount').textContent = flowData.flowConnections.length;
+      
+      // 出力を更新
+      document.getElementById('markdownOutput').textContent = markdownData;
+      document.getElementById('jsonOutput').textContent = JSON.stringify(flowData, null, 2);
+      document.getElementById('mermaidOutput').textContent = generateMermaid(flowData);
+      
+      // ボタンを有効化
+      document.getElementById('sendToServer').disabled = false;
+      document.getElementById('copyToClipboard').disabled = false;
+    }
+    
+    function generateMermaid(data) {
+      if (!data || !data.flowConnections.length) {
+        return 'flowchart TD\n  NoData[インタラクションが見つかりません]';
+      }
+      
+      let mermaid = 'flowchart TD\n';
+      
+      // ノードIDをMermaid互換の形式に変換
+      const sanitizeId = (id) => id.replace(/[:-]/g, '_');
+      
+      // ユニークなノードを追加
+      const nodes = new Set();
+      data.flowConnections.forEach(conn => {
+        const fromId = sanitizeId(conn.fromNodeId);
+        const toId = sanitizeId(conn.toNodeId);
+        
+        if (!nodes.has(fromId)) {
+          mermaid += `  ${fromId}["${conn.fromNodeName}"]\n`;
+          nodes.add(fromId);
+        }
+        if (!nodes.has(toId)) {
+          mermaid += `  ${toId}["${conn.toNodeName}"]\n`;
+          nodes.add(toId);
+        }
+      });
+      
+      mermaid += '\n';
+      
+      // 接続を追加
+      data.flowConnections.forEach(conn => {
+        const fromId = sanitizeId(conn.fromNodeId);
+        const toId = sanitizeId(conn.toNodeId);
+        const label = `${conn.trigger}`;
+        mermaid += `  ${fromId} -->|${label}| ${toId}\n`;
+      });
+      
+      return mermaid;
+    }
+  </script>
+</body>
+</html>
